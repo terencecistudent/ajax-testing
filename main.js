@@ -1,13 +1,12 @@
-const baseURL = "https://www.swapi.co/api/";
-
-function getData(type, cb) {
+/*--------------------------------------------getData function -----*/
+function getData(url, cb) {
     /* XMLHttpRequest object is an inbuilt object that JavaScript provides
     to allow us to consume APIs. */
     // Gives us the method to open connections, to send connections, and close them.
     var xhr = new XMLHttpRequest();
 
     // Opening connection.
-    xhr.open("GET", baseURL + type + "/");
+    xhr.open("GET", url);
     xhr.send();
 
     // Change that by JSON.parse(); - check console in inspect.
@@ -29,14 +28,37 @@ function getTableHeader(obj) {
     return `<tr>${tableHeaders}</tr>`;
 }
 
+// Takes 2 arguments, nexr and previous.
+/*--------------------------------------------generatePaginationButtons function -----*/
+function generatePaginationButtons(next, prev) {
+    // If next and previous values exist, return both buttons.
+    if(next && prev){
+        return `<button onclick="writeToDocument('${prev}')">Previous</button>
+               <button onclick="writeToDocument('${next}')">Next</button>`;
+    // If next but not previous, return next button.
+    } else if (next && !prev) {
+        return `<button onclick="writeToDocument('${next}')">Next</button>`;
+    // If previous but not next, return previous button.
+    } else if (!next && prev) {
+        return `<button onclick="writeToDocument('${prev}')">Previous</button>`;
+    }
+}
+
 // Parameter type means type from api.
 // console.dir - dir stands for directory.
-function writeToDocument(type) {
+/*--------------------------------------------writeToDocument function -----*/
+function writeToDocument(url) {
     var tableRows = [];
     var el = document.getElementById("data");
     el.innerHTML = "";
 
-    getData(type, function(data) {
+    getData(url, function(data) {
+        // Pagination variable.
+        var pagination;
+        if (data.next || data.previous) {
+            pagination = generatePaginationButtons(data.next, data.previous)
+        }
+
         data = data.results;
         var tableHeaders = getTableHeader(data[0]);
 
@@ -56,6 +78,6 @@ function writeToDocument(type) {
             tableRows.push(`<tr>${dataRow}</tr>`);
         });
 
-        el.innerHTML = `<table>${tableHeaders}${tableRows}</table>`;
+        el.innerHTML = `<table>${tableHeaders}${tableRows}</table>${pagination}`;
     });
 }
